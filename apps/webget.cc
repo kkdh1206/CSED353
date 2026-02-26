@@ -16,9 +16,22 @@ void get_URL(const string &host, const string &path) {
     // Then you'll need to print out everything the server sends back,
     // (not just one call to read() -- everything) until you reach
     // the "eof" (end of file).
+    // cerr << "Function called: get_URL(" << host << ", " << path << ").\n";
+    // cerr << "Warning: get_URL() has not been implemented yet.\n";
+    Address address = Address(host,"http"); // 연결방식
+    TCPSocket tcp; // tcp가 데이터유실 재전송 등을 담당해준다.
+    tcp.connect(address); // 이게 넘어가려면 연결이 되야함
+    tcp.write("GET " + path + " HTTP/1.1\r\n" +
+                 "Host: " + host + "\r\n" +
+                 "Connection: close\r\n" +
+                 "\r\n");
+    while(!tcp.eof()){ // eof가 아닌겨우 계속 출력
+        string letter = tcp.read();
+        cout << letter ;
+    }
 
-    cerr << "Function called: get_URL(" << host << ", " << path << ").\n";
-    cerr << "Warning: get_URL() has not been implemented yet.\n";
+
+    // cout << "Connection: close"<<endl;
 }
 
 int main(int argc, char *argv[]) {
