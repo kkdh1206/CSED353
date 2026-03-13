@@ -2,15 +2,23 @@
 #define SPONGE_LIBSPONGE_STREAM_REASSEMBLER_HH
 
 #include "byte_stream.hh"
-
+#include <map>
 #include <cstdint>
 #include <string>
+#include <iterator>
 
 //! \brief A class that assembles a series of excerpts from a byte stream (possibly out of order,
 //! possibly overlapping) into an in-order byte stream.
 class StreamReassembler {
   private:
     // Your code here -- add private members as necessary.
+    std::map<uint64_t, std::string> assembling_storage{}; // 인덱스 순으로 정렬된 보관소
+    size_t storage_bytes{0};
+
+    size_t last_index{0};
+
+    bool _is_eof_set = false;
+  size_t _eof_idx = 0;
 
     ByteStream _output;  //!< The reassembled in-order byte stream
     size_t _capacity;    //!< The maximum number of bytes
