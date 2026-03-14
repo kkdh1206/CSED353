@@ -18,16 +18,24 @@ StreamReassembler::StreamReassembler(const size_t capacity) : _output(capacity),
 //! possibly out-of-order, from the logical stream, and assembles any newly
 //! contiguous substrings and writes them into the output stream in order.
 void StreamReassembler::push_substring(const string &data, const size_t index, const bool eof) { // 데이터 들어오는거 처리
-    size_t lower = this.last_index; // 여기서부터 채워나가야함
-    size_t upper = lower + this.capacity; // 이걸로 존재할수있는 영역 바운드
+    size_t lower = this->last_index; // 여기서부터 채워나가야함
+    size_t upper = _output.bytes_read() + _capacity; // 이걸로 존재할수있는 영역 바운드 - 이때 오해하면안되는게 lower~upper가 capcity 만큼있는게 아님 그냥정렬되서 읽는거로 넘긴것뿐임 넘겨도 같은 capcity공유
     string local_data = data;
     size_t local_index = index;
     // 내 앞 map 만 겹치는지 보면됨 왜냐면 서로 안겹치니까 그리고 내 바로 뒷 map과 겹치면 거기까지만 저장
 
-    if (index >= upper || index + data.length() <= lower) {
-        return; // 필요없는 범위라 버림
-    }    
-
+    if (eof && index + data.length() <= upper) { // eof가 먼저 도착할수도있는데 그때 먼저 꺼버리면 안됨 - 대신ㄴ 제대로 들어온거만 기억함
+        _is_eof_set = true; // eof정보가 들어온적있는지 저장
+        _eof_idx = index + data.length(); // 전체 스트림이 여기서 끝난다는 것을 기억
+    }
+    // if(!eof){ // eof인건 길이 0이라도 무시당하면안되니까 제외하고 날려줌
+    //     if (index >= upper || index + data.length() <= lower) {
+    //         return; // 필요없는 범위라 버림
+    //     }
+    // }    
+    if (index >= upper || index + data.length() < lower) {
+        return; 
+    }
 
     if (index+local_data.length()>upper) // 튀어나오는거 먼저 자르자
     {
@@ -35,7 +43,7 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
     }
 
     if (index < lower){
-        local_data = local_data.substr(lower - index, local_data.length())
+        local_data = local_data.substr(lower - index, local_data.length());
         local_index = lower;
     } 
     auto it = assembling_storage.lower_bound(local_index); // 이거보다 큰것 중 작은 걸 찾음
@@ -89,13 +97,13 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
 
     // eof 처리해줘야함
 
-    if (_is_eof_set && last_index == _eof_idx) {
+    if (_is_eof_set && last_index == _eof_idx) { // 실제 last_index가 최종 index인 eof_index에 도달하고 eof가 온경우면 종료
         _output.end_input();
     }
 
     
 }
 
-size_t StreamReassembler::unassembled_bytes() const { return {this.storage_bytes}; }
+size_t StreamReassembler::unassembled_bytes() const { return {this->storage_bytes}; }
 
-bool StreamReassembler::empty() const { return {this.storage_bytes == 0}; } // 저장된거 없으면 참
+bool StreamReassembler::empty() const { return {this->storage_bytes == 0}; } // 저장된거 없으면 참
