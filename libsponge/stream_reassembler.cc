@@ -92,8 +92,8 @@ void StreamReassembler::push_substring(const string &data,
     // auto it = assembling_storage.lower_bound(last_index);
     while (!assembling_storage.empty() && last_index == assembling_storage.begin()->first) {
         auto head = assembling_storage.begin();  // 제일 앞 잡음
-        _output.write(head->second);
-        last_index += head->second.length();  // 지우기 전에 길이와 값을 다 계산
+        _output.write(head->second);             // <-------- 실제로 데이터 바이트 스트림에서 쓰도록 넘기는부분
+        last_index += head->second.length();     // 지우기 전에 길이와 값을 다 계산
         storage_bytes -= head->second.length();
 
         assembling_storage.erase(head);  // 마지막에 깔끔하게 삭제

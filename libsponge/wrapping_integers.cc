@@ -6,7 +6,7 @@
 // automated checks run by `make check_lab2`.
 
 template <typename... Targs>
-void DUMMY_CODE(Targs &&... /* unused */) {}
+void DUMMY_CODE(Targs &&.../* unused */) {}
 
 using namespace std;
 
@@ -15,7 +15,8 @@ using namespace std;
 //! \param isn The initial sequence number
 WrappingInt32 wrap(uint64_t n, WrappingInt32 isn) {
     DUMMY_CODE(n, isn);
-    return WrappingInt32{0};
+    return WrappingInt32(isn.raw_value() +
+                         static_cast<uint32_t>(n));  // 걍 n의 32비트 뒷쪽만 자르고 남긴후에 isn값더해줌
 }
 
 //! Transform a WrappingInt32 into an "absolute" 64-bit sequence number (zero-indexed)
@@ -30,5 +31,31 @@ WrappingInt32 wrap(uint64_t n, WrappingInt32 isn) {
 //! has a different ISN.
 uint64_t unwrap(WrappingInt32 n, WrappingInt32 isn, uint64_t checkpoint) {
     DUMMY_CODE(n, isn, checkpoint);
-    return {};
+    // 후보1
+    uint64_t cand1 = ((checkpoint >> 32) << 32) +
+                     static_cast<uint64_t>(n.raw_value() - isn.raw_value());  // 아 msb음수는 아니겟지 뭐상관없을듯
+    // 후보2
+    uint64_t cand2 =
+        (((checkpoint >> 32) << 32) + (1ull << 32)) + static_cast<uint64_t>(n.raw_value() - isn.raw_value());
+    // 후보3
+    uint64_t cand3 =
+        (((checkpoint >> 32) << 32) - (1ull << 32)) + static_cast<uint64_t>(n.raw_value() - isn.raw_value());
+
+    if (cand1 < checkpoint) {  // 오버플로우 방지용
+        if (cand2 - checkpoint > checkpoint - cand1) {
+            return cand1;
+        } else {
+            return cand2;
+        }
+    } else {
+        if (cand1 - checkpoint > checkpoint - cand3) {  // 음수면안되니까
+            if (checkpoint >= cand3) {
+                return cand3;
+            } else {
+                return cand1;
+            }
+        } else {
+            return cand1;
+        }
+    }
 }

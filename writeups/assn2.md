@@ -1,11 +1,11 @@
 Assignment 2 Writeup
 =============
 
-My name: [your name here]
+My name: 김도형
 
-My POVIS ID: [your povis id here]
+My POVIS ID: kkdh1206
 
-My student ID (numeric): [your student id here]
+My student ID (numeric): 20210740
 
 This assignment took me about [n] hours to do (including the time on studying, designing, and writing the code).
 
@@ -20,7 +20,15 @@ Implementation Challenges:
 []
 
 Remaining Bugs:
-[]
+[
+unwrap(WrappingInt32(UINT32_MAX), WrappingInt32(0), 0)` should have been `static_cast<uint64_t>(UINT32_MAX)`, but the former is
+        18446744073709551615
+and the latter is
+        4294967295 (difference of 4294967296)
+ (at line 25)
+
+
+]
 
 - Optional: I had unexpected difficulty with: [describe]
 
