@@ -38,7 +38,7 @@ class TCPSender {
     uint64_t _bytes_in_flight{0};
     uint64_t _time{0};
     uint64_t _retransmission_count{0};
-    uint64_t _window_size{1};
+    uint64_t _window_size{1}; // 초기에 시작할때 syn 이 나가기위해
     bool _timer_active{false};
     bool _fin_sent{false};
 
