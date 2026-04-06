@@ -21,16 +21,27 @@ class TCPSender {
     WrappingInt32 _isn;
 
     //! outbound queue of segments that the TCPSender wants sent
-    std::queue<TCPSegment> _segments_out{};
+    std::queue<TCPSegment> _segments_out{}; // 데이터 보냈다고 가정하는듯
+
+    std::queue<TCPSegment> _outstanding_segments{};
 
     //! retransmission timer for the connection
     unsigned int _initial_retransmission_timeout;
+    unsigned int _retransmission_timeout;
 
     //! outgoing stream of bytes that have not yet been sent
     ByteStream _stream;
 
     //! the (absolute) sequence number for the next byte to be sent
     uint64_t _next_seqno{0};
+
+    uint64_t _bytes_in_flight{0};
+    uint64_t _time{0};
+    uint64_t _retransmission_count{0};
+    uint64_t _window_size{1};
+    bool _timer_active{false};
+    bool _fin_sent{false};
+
 
   public:
     //! Initialize a TCPSender
