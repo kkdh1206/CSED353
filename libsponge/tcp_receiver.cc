@@ -15,7 +15,7 @@ void TCPReceiver::segment_received(const TCPSegment &seg) {
     TCPHeader header = seg.header();
     Buffer payload = seg.payload();
     if (header.syn) {  // 시작
-        _isn = header.seqno;
+        _isn = header.seqno; // 상대 sender에 의해서 isn 결정되고 그걸 그대로 가지고있음
     }
     if (!_isn.has_value()) {
         return;  // syn안왓으면 그냥 종료 이거없으면 순서 알지도 못함
