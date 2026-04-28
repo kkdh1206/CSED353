@@ -29,6 +29,8 @@ class TCPConnection {
     //! \name "Input" interface for the writer
     //!@{
 
+    void TCPConnection::send_segment(); // segment 보내는함수
+
     //! \brief Initiate a connection by sending a SYN segment
     void connect();
 
@@ -81,7 +83,7 @@ class TCPConnection {
     //! \brief Is the connection still alive in any way?
     //! \returns `true` if either stream is still running or if the TCPConnection is lingering
     //! after both streams have finished (e.g. to ACK retransmissions from the peer)
-    bool active() const;
+    bool active() const { return _active; } // 이걸 반환해야함
     //!@}
 
     //! Construct a new connection from a configuration

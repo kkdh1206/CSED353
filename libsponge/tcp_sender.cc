@@ -37,7 +37,7 @@ void TCPSender::fill_window() {
 
         // SYN: 시작할 때 켬
         if (_next_seqno == 0)
-            seg.header().syn = true;
+            seg.header().syn = true; // 이거할땐 상대 윈도우 사이즈 모르고 0이라 설정되있어서 win = 1임
         seg.header().seqno = next_seqno();
 
         // 남은공간  계산
