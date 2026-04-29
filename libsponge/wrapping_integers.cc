@@ -48,8 +48,8 @@ uint64_t unwrap(WrappingInt32 n, WrappingInt32 isn, uint64_t checkpoint) {
             return cand2;
         }
     } else {
-        if (cand1 - checkpoint >
-            checkpoint - cand3) {  // 음수면안되니까 - 이러면 음수에서 오버플로떠버려서 음수개념없어서 문제생기는거 막음 - 지각한 케이스
+        if (cand1 - checkpoint > checkpoint - cand3) {  // 음수면안되니까 - 이러면 음수에서 오버플로떠버려서
+                                                        // 음수개념없어서 문제생기는거 막음 - 지각한 케이스
             if (checkpoint >= cand3) {
                 return cand3;
             } else {

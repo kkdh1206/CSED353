@@ -23,7 +23,7 @@ class TCPConnection {
 
     bool _active{true};
 
-    bool _connected{false}; // 초기에 연결됬는지 확인
+    bool _connected{false};  // 초기에 연결됬는지 확인
 
     uint64_t _last_received_time{0};
 
@@ -31,7 +31,7 @@ class TCPConnection {
     //! \name "Input" interface for the writer
     //!@{
 
-    void send_segment(); // segment 보내는함수
+    void send_segment();  // segment 보내는함수
 
     //! \brief Initiate a connection by sending a SYN segment
     void connect();

@@ -37,7 +37,7 @@ void TCPSender::fill_window() {
 
         // SYN: 시작할 때 켬
         if (_next_seqno == 0)
-            seg.header().syn = true; // 이거할땐 상대 윈도우 사이즈 모르고 0이라 설정되있어서 win = 1임
+            seg.header().syn = true;  // 이거할땐 상대 윈도우 사이즈 모르고 0이라 설정되있어서 win = 1임
         seg.header().seqno = next_seqno();
 
         // 남은공간  계산
@@ -86,10 +86,12 @@ void TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_si
         return;  // 말이안됨
     }
     bool check = false;
-    while (!_outstanding_segments.empty() && unwrap(_outstanding_segments.front().header().seqno +
-                                                        _outstanding_segments.front().length_in_sequence_space(),
-                                                    _isn,
-                                                    _next_seqno) <= abs_seqno) { // abs_seqno가 지금 온번호니까 그거보다 작은 outstanding은 이제 다온거니까 이제 삭제해둠
+    while (
+        !_outstanding_segments.empty() &&
+        unwrap(_outstanding_segments.front().header().seqno + _outstanding_segments.front().length_in_sequence_space(),
+               _isn,
+               _next_seqno) <=
+            abs_seqno) {  // abs_seqno가 지금 온번호니까 그거보다 작은 outstanding은 이제 다온거니까 이제 삭제해둠
         // 끝번호랑 비교해서 끝자리까지 다 처리가 된건지 확인
         TCPSegment seg = _outstanding_segments.front();
         _outstanding_segments.pop();
@@ -126,7 +128,8 @@ void TCPSender::tick(const size_t ms_since_last_tick) {
         }
         TCPSegment old = _outstanding_segments.front();  // 근데 비어있으면 어쩌지 - empty로 확인함
         _segments_out.push(old);
-        if (_window_size > 0) { // zero window 상황에서는 retransmission 을 2배씩 늘려서 기다리지 않기위해 제외한상황만함
+        if (_window_size >
+            0) {  // zero window 상황에서는 retransmission 을 2배씩 늘려서 기다리지 않기위해 제외한상황만함
             _retransmission_timeout *= 2;
         }
         _time = 0;  // 시간초기화
@@ -137,7 +140,9 @@ void TCPSender::tick(const size_t ms_since_last_tick) {
 
 unsigned int TCPSender::consecutive_retransmissions() const { return _retransmission_count; }
 
-void TCPSender::send_empty_segment() {  // ackno 대답용도 이제 데이터 보낼거 따로 없을때 이걸로 하는거임 - ackno는 나중에 달아줄거임 그리고 seqno는 empty기때문에 더이상 증가하지 않고 같은걸 계속보냄
+void TCPSender::send_empty_segment() {  // ackno 대답용도 이제 데이터 보낼거 따로 없을때 이걸로 하는거임 - ackno는
+                                        // 나중에 달아줄거임 그리고 seqno는 empty기때문에 더이상 증가하지 않고 같은걸
+                                        // 계속보냄
     TCPSegment empty;
     empty.header().seqno =
         next_seqno();  // 보낼때 absoulte seqno로 보내는게아니라 seqno로 보낸다 이는 32비트로 더 경제적으로 보낼수있고

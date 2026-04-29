@@ -21,7 +21,7 @@ class TCPSender {
     WrappingInt32 _isn;
 
     //! outbound queue of segments that the TCPSender wants sent
-    std::queue<TCPSegment> _segments_out{}; // 데이터 보냈다고 가정하는듯
+    std::queue<TCPSegment> _segments_out{};  // 데이터 보냈다고 가정하는듯
 
     std::queue<TCPSegment> _outstanding_segments{};
 
@@ -38,10 +38,9 @@ class TCPSender {
     uint64_t _bytes_in_flight{0};
     uint64_t _time{0};
     uint64_t _retransmission_count{0};
-    uint64_t _window_size{1}; // 초기에 시작할때 syn 이 나가기위해
+    uint64_t _window_size{1};  // 초기에 시작할때 syn 이 나가기위해
     bool _timer_active{false};
     bool _fin_sent{false};
-
 
   public:
     //! Initialize a TCPSender
