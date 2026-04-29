@@ -64,14 +64,14 @@ void TCPConnection::segment_received(const TCPSegment &seg) { // 수신시
     }
 
     // ack 보내주기 - 데이터가 있는거만
-    if (seg.length_in_sequence_space()>0){
+    if (seg.length_in_sequence_space()>0 || ((_receiver.ackno().has_value() && (seg.length_in_sequence_space() == 0)
+    && seg.header().seqno == _receiver.ackno().value() - 1))){ //  keep-alive - 이전번호를 보내줘서 연결살아있는지 확인용이고 크기가 0이라서 이 조건추가해줌
+        // zero probing은 win이 꽉 찼을때 다시 비었냐 불어보는거고 retransmission은 보냈던거 ACK안해주면 다시 보내는거
         _sender.fill_window(); // 데이터 보낼거 충전해둠
-        if(_sender.stream_in().buffer_empty()){ // 그래도 보낼게 없다 즉 거절
+        if(_sender.segments_out().empty()){ // 그래도 보낼게 없다 즉 거절
             _sender.send_empty_segment(); // ackno전달용 pure ACK
         }
     }  
-
-    // 0바이트 간보는거? 추가해야할지도
 
     send_segment();
 
