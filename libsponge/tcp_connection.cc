@@ -33,8 +33,7 @@ void TCPConnection::segment_received(const TCPSegment &seg) { // 수신시
         return;
     }
     
-    // reciever 한테도 보내주기
-    _receiver.segment_received(seg); 
+    
     // ack(크기 > 0)면 잘받았다 ack보내주기
     if (seg.header().ack){
         auto window = seg.header().win;
@@ -45,9 +44,33 @@ void TCPConnection::segment_received(const TCPSegment &seg) { // 수신시
         // }
     } // synack일수도있으니까 ack먼저 처리
 
+    // reciever 한테도 보내주기
+    _receiver.segment_received(seg); 
+
+    if (_receiver.stream_out().input_ended() && !_sender.stream_in().eof()) { // FIN을 받은경우는 꺼줌, 내가 FIN을 보낸경우에는 계속 true로 둠
+        _linger_after_streams_finish = false; 
+    }
+
     if (seg.header().syn && _sender.next_seqno_absolute()== 0) { // 처음 SYN에 대해서만 connect날리고 SYNACK는 패스시킴
         connect(); // 연결요청
+        return;
     }
+
+//     bool need_send = seg.length_in_sequence_space() > 0;
+
+// // 리시버가 보기에 대답이 필요한 상황(Handshake 등) 체크
+// if (_receiver.ackno().has_value() && (seg.length_in_sequence_space() == 0)
+//     && seg.header().seqno == _receiver.ackno().value() - 1) {
+//     need_send = true;
+// }
+
+// if (need_send) {
+//     _sender.fill_window();
+//     if (_sender.segments_out().empty()) {
+//         _sender.send_empty_segment();
+//     }
+// }
+// send_segment();
 
     // ack 보내주기 - 데이터가 있는거만
     if (seg.length_in_sequence_space()>0){
@@ -56,6 +79,9 @@ void TCPConnection::segment_received(const TCPSegment &seg) { // 수신시
             _sender.send_empty_segment(); // ackno전달용 pure ACK
         }
     }  
+
+    // 0바이트 간보는거? 추가해야할지도
+
     send_segment();
 
 }
@@ -76,28 +102,36 @@ bool TCPConnection::active() const {
     if(!_active){
         return false;
     }
+
+   if (_receiver.stream_out().input_ended() &&  // 비정상종료에서 정상종료 되면 안되기 때문에 이안에 넣어줌
+        _sender.stream_in().eof() && 
+        _sender.bytes_in_flight() == 0) { // 만약 reciever, sender모두 종료에 보내는것도 없다면 종료상황임
+        
+            if (!_linger_after_streams_finish ||  // FIN을 내가 받고 답장을 한 상황이거나
+                _last_received_time >= 10 * _cfg.rt_timeout) { // 보냈는데 시간 많이 지났으면 _active false로 해줌
+                return false;
+            }
+        }
     return true;
 }
 
 //! \param[in] ms_since_last_tick number of milliseconds since the last call to this method
 void TCPConnection::tick(const size_t ms_since_last_tick) { DUMMY_CODE(ms_since_last_tick); 
-    if (!_active) {
-        return;  // 꺼져있으면 작동안함
-    }
     
     _last_received_time += ms_since_last_tick; // 시간흐르도록
-
-    // if (10* <= _last_received_time){
-    //     _active = false;
-    // }
-
-
     _sender.tick(ms_since_last_tick); // 여기도 시간흐르도록
+
+    if (!active()) {
+        _active = false;
+        return;  // 꺼져있으면 작동안함
+    }
+
     if (_sender.consecutive_retransmissions() <= TCPConfig::MAX_RETX_ATTEMPTS){
+
+        
         _sender.fill_window(); // zero probing 보낼수도
         send_segment(); // 재전송 혹은 실패 seg를 전송
 
-        // 여기서 시간확인
 
     }
     else{
@@ -145,6 +179,7 @@ void TCPConnection::send_segment() { // queue에 쌓인걸 보내는함수
         TCPSegment seg;
         // size_t win;
         seg = queue.front();
+        queue.pop();
         // 지금은 seqno만 있고 ackno랑 win을 알아야하는데 이건 Sender말고 Reciever에서 알고있음
 
         auto win = _receiver.window_size();
@@ -157,7 +192,7 @@ void TCPConnection::send_segment() { // queue에 쌓인걸 보내는함수
         }
         
         _segments_out.push(seg);
-        queue.pop();
+        
     }
 }
 
