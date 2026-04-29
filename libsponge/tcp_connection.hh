@@ -21,7 +21,9 @@ class TCPConnection {
     //! in case the remote TCPConnection doesn't know we've received its whole stream?
     bool _linger_after_streams_finish{true};
 
-    bool _active{false};
+    bool _active{true};
+
+    bool _connected{false}; // 초기에 연결됬는지 확인
 
     uint64_t _last_received_time{0};
 
