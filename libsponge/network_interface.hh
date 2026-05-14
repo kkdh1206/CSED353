@@ -5,6 +5,9 @@
 #include "tcp_over_ip.hh"
 #include "tun.hh"
 
+#include <iterator>
+#include <list>
+#include <map>
 #include <optional>
 #include <queue>
 
@@ -39,6 +42,14 @@ class NetworkInterface {
 
     //! outbound queue of Ethernet frames that the NetworkInterface wants sent
     std::queue<EthernetFrame> _frames_out{};
+
+    std::map<uint32_t, std::list<EthernetFrame>>
+        _waiting_frames_out{};  // ARP안와서 대기하는용 - next_hop_ip기준으로 구분해둠
+
+    std::map<uint32_t, EthernetAddress> _arp_storage{};  // arp 캐시
+    std::map<uint32_t, size_t> _arp_recv_time{};         // arp 온시간 저장
+    std::map<uint32_t, size_t> _arp_send_time{};         // arp 보낸시간 저장
+    std::map<uint32_t, bool> _arp_resend{};              // arp 다시보내는거 가능한지
 
   public:
     //! \brief Construct a network interface with given Ethernet (network-access-layer) and IP (internet-layer) addresses
