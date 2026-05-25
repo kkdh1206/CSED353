@@ -98,8 +98,9 @@ optional<InternetDatagram> NetworkInterface::recv_frame(const EthernetFrame &fra
 
                     if (arp_message.opcode == ARPMessage::OPCODE_REPLY) {  // 대답이 온거면 밀렸던거 다시 보내주기
                         auto &waiting_list = _waiting_frames_out[arp_message.sender_ip_address];  // 참조로 가져옴!!!
-                        // 복사로 가져오면 실제로 다 했는데도 삭제가안됨 그러면 아직 _waiting_frames_out에는 계속 데이터 남아있고 나중에 바뀌어도 또 그 프레임을 또 보내는 중복문제가 발생함
-                        // next_hop에서 응답해서 보내주면 그거 기반으로 기다리고있는 waiting list를 보내줘야함
+                        // 복사로 가져오면 실제로 다 했는데도 삭제가안됨 그러면 아직 _waiting_frames_out에는 계속 데이터
+                        // 남아있고 나중에 바뀌어도 또 그 프레임을 또 보내는 중복문제가 발생함 next_hop에서 응답해서
+                        // 보내주면 그거 기반으로 기다리고있는 waiting list를 보내줘야함
 
                         for (auto it = waiting_list.begin(); it != waiting_list.end();) {
                             InternetDatagram datagram;
