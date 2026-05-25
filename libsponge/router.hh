@@ -45,14 +45,13 @@ class Router {
     std::vector<AsyncNetworkInterface> _interfaces{};
 
     struct RouteEntry {
-        uint32_t route_prefix{0};            // 경로 앞부분
-        uint8_t prefix_length{0};           // 앞부분 길이
+        uint32_t route_prefix{0};                       // 경로 앞부분
+        uint8_t prefix_length{0};                       // 앞부분 길이
         std::optional<Address> next_hop{std::nullopt};  // 가야할 next_hop
-        size_t interface_num{0};            //
+        size_t interface_num{0};                        //
     };
 
-    std::vector<RouteEntry>
-        route_entry_list{};  // 라우트 경로 저장하고 있음
+    std::vector<RouteEntry> route_entry_list{};  // 라우트 경로 저장하고 있음
 
     //! Send a single datagram from the appropriate outbound interface to the next hop,
     //! as specified by the route with the longest prefix_length that matches the

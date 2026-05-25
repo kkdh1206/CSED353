@@ -59,10 +59,10 @@ void Router::route_one_datagram(InternetDatagram &dgram) {
         uint32_t mask = (it->prefix_length == 0)
                             ? 0
                             : (0xFFFFFFFF << (32 - it->prefix_length));  // 앞쪽만 비교할거니까 앞쪽을 만들어줌
-        if ((dgram.header().dst & mask) == (mask & it->route_prefix)) {   // 만약 prefix같으면 후보 도전
+        if ((dgram.header().dst & mask) == (mask & it->route_prefix)) {  // 만약 prefix같으면 후보 도전
             if (candidate_prefix_length <= it->prefix_length) {
                 candidate_prefix_length = it->prefix_length;  // candidate 수정
-                cand_entry = &(*it);                          // 참조포인터 - 이거로 해야 Address 저장된 next_hop가 deepcopy안된다고 함
+                cand_entry = &(*it);  // 참조포인터 - 이거로 해야 Address 저장된 next_hop가 deepcopy안된다고 함
             }
         }
     }
